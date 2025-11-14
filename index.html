@@ -107,26 +107,27 @@ async function login() {
 
         let data = await res.json();
 
-        if (!data.success) {
-            msg.innerText = "خطأ في اسم المستخدم أو كلمة المرور";
+        if (data.status !== "success") {
+            msg.innerText = data.message || "خطأ في اسم المستخدم أو كلمة المرور";
             return;
         }
 
         // حفظ بيانات العميل
-        localStorage.setItem("client_id", data.client_id);
-        localStorage.setItem("client_name", data.name);
-
-        // الانتقال لصفحة العميل
-        window.location = "client.html";
+        if (data.role === "client") {
+            localStorage.setItem("client_id", data.client_id);
+            localStorage.setItem("client_name", data.name);
+            window.location = "client.html";
+        } else if (data.role === "admin") {
+            window.location = "admin.html";
+        }
 
     } catch (err) {
         msg.innerText = "خطأ في الاتصال بالسيرفر";
         console.error(err);
     }
 }
+
 </script>
 
 </body>
 </html>
-
-
