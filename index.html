@@ -2,17 +2,129 @@
 <html lang="ar" dir="rtl">
 <head>
 <meta charset="UTF-8">
-<title>تسجيل الدخول</title>
-<link rel="stylesheet" href="style.css" />
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>تسجيل دخول العميل | نظام الديون</title>
+
+<!-- =======================  CSS  ======================= -->
+<style>
+    body {
+        font-family: "Tajawal", sans-serif;
+        background: #f1f5f9;
+        margin: 0;
+        padding: 0;
+        display: flex;
+        height: 100vh;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .card {
+        width: 350px;
+        background: white;
+        padding: 30px;
+        border-radius: 15px;
+        box-shadow: 0 4px 15px #0001;
+        text-align: center;
+    }
+
+    h2 {
+        margin-bottom: 20px;
+        color: #0f172a;
+    }
+
+    input {
+        width: 100%;
+        padding: 12px;
+        margin-top: 10px;
+        border-radius: 8px;
+        border: 1px solid #d1d5db;
+        font-size: 15px;
+    }
+
+    button {
+        width: 100%;
+        padding: 12px;
+        margin-top: 15px;
+        border: none;
+        border-radius: 8px;
+        background: #2563eb;
+        color: white;
+        font-size: 17px;
+        cursor: pointer;
+    }
+
+    button:hover {
+        background: #1d4ed8;
+    }
+
+    #msg {
+        margin-top: 15px;
+        color: red;
+        font-weight: bold;
+    }
+</style>
 </head>
+
 <body>
+
+<!-- =======================  HTML  ======================= -->
 <div class="card">
-<h2>تسجيل دخول العميل</h2>
-<input id="username" placeholder="اسم المستخدم">
-<input id="password" type="password" placeholder="كلمة المرور">
-<button onclick="login()">دخول</button>
-<p id="msg"></p>
+    <h2>تسجيل دخول العميل</h2>
+
+    <input id="username" placeholder="اسم المستخدم">
+    <input id="password" type="password" placeholder="كلمة المرور">
+
+    <button onclick="login()">دخول</button>
+
+    <p id="msg"></p>
 </div>
-<script src="script.js"></script>
+
+<!-- =======================  JavaScript  ======================= -->
+<script>
+const API =" https://script.google.com/macros/s/AKfycbxRa_PLC_aO0EeWQBrNV7NXVoh6yb4ZlZrHz1o8oyhcu2QjXAac53Bjh3BKp8PIublL/exec"; // <= مهم جداً
+
+async function login() {
+    let username = document.getElementById("username").value.trim();
+    let password = document.getElementById("password").value.trim();
+    let msg = document.getElementById("msg");
+
+    msg.innerText = "";
+
+    if (username === "" || password === "") {
+        msg.innerText = "يرجى تعبئة جميع الحقول";
+        return;
+    }
+
+    try {
+        let res = await fetch(API, {
+            method: "POST",
+            body: JSON.stringify({
+                action: "login",
+                username,
+                password
+            })
+        });
+
+        let data = await res.json();
+
+        if (!data.success) {
+            msg.innerText = "خطأ في اسم المستخدم أو كلمة المرور";
+            return;
+        }
+
+        // حفظ بيانات العميل
+        localStorage.setItem("client_id", data.client_id);
+        localStorage.setItem("client_name", data.name);
+
+        // الانتقال لصفحة العميل
+        window.location = "client.html";
+
+    } catch (err) {
+        msg.innerText = "خطأ في الاتصال بالسيرفر";
+        console.error(err);
+    }
+}
+</script>
+
 </body>
 </html>
