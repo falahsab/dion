@@ -9,35 +9,122 @@
     body {
         font-family: "Tajawal", sans-serif;
         background: #f1f5f9;
+        margin: 0;
         padding: 20px;
     }
 
     .card {
-        max-width: 600px;
+        max-width: 90%;
         margin: auto;
-        background: white;
-        padding: 25px;
+        background: #ffffff;
+        padding: clamp(20px, 5%, 40px);
         border-radius: 15px;
-        box-shadow: 0 4px 12px #0001;
+        box-shadow: 0 8px 25px rgba(0,0,0,0.1);
     }
 
-    h2, h3 { margin: 10px 0; color: #0f172a; }
+    .header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 25px;
+        border-bottom: 2px solid #e5e7eb;
+        padding-bottom: 15px;
+        flex-wrap: wrap;
+    }
+
+    .header img {
+        max-height: 60px;
+        width: auto;
+        object-fit: contain;
+        border-radius: 8px;
+        margin-bottom: 10px;
+    }
+
+    .header div h2 {
+        font-size: clamp(16px, 2vw, 22px);
+        color: #0f172a;
+        margin: 0 0 5px 0;
+        font-weight: 600;
+    }
+
+    .header div small {
+        font-size: clamp(11px, 1.5vw, 14px);
+        color: #64748b;
+    }
+
+    h2#clientName {
+        font-size: clamp(16px, 2.2vw, 20px);
+        font-weight: 600;
+        margin: 15px 0;
+    }
+
+    h3 {
+        font-size: clamp(14px, 2vw, 18px);
+        margin: 10px 0;
+        font-weight: 500;
+    }
+
+    #total {
+        font-weight: bold;
+        padding: 2px 6px;
+        border-radius: 5px;
+    }
+
+    .btn {
+        padding: clamp(8px, 1.5vw, 12px) clamp(12px, 3vw, 20px);
+        margin: 10px 5px 15px 0;
+        border: none;
+        border-radius: 8px;
+        font-size: clamp(14px, 2vw, 16px);
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    #showStatementBtn {
+        background: #2563eb;
+        color: white;
+    }
+
+    #showStatementBtn:hover {
+        background: #1d4ed8;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    }
+
+    #logoutBtn {
+        background: #ef4444;
+        color: white;
+    }
+
+    #logoutBtn:hover {
+        background: #b91c1c;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    }
 
     table {
         width: 100%;
         border-collapse: collapse;
         margin-top: 15px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        border-radius: 8px;
+        overflow: hidden;
+        font-size: clamp(12px, 1.8vw, 16px);
     }
 
     th, td {
         border-bottom: 1px solid #e5e7eb;
-        padding: 10px;
+        padding: clamp(8px, 1.5vw, 12px);
         text-align: center;
     }
 
     th {
         background: #f8fafc;
-        font-weight: bold;
+        font-weight: 700;
+        color: #1e293b;
+    }
+
+    tr:hover {
+        background: #f1f5f9;
     }
 
     .credit { color: green; font-weight: bold; }
@@ -46,29 +133,41 @@
 </head>
 
 <body>
-
 <div class="card">
+    <div class="header">
+        <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRs2ovFJ2ON5qaPKiTvA-DMJa7p6264vHUDgSW1BfQaDR-eicLmVAcWFvK8MHGk9HGywCY&usqp=CAU" alt="لوجو المحل">
+        <div>
+            <h2>قسم الحسابات | محل الفؤاد</h2>
+            <small>الهاتف: 777777 - العنوان: صنعاء</small>
+        </div>
+    </div>
+
     <h2 id="clientName"></h2>
     <h3>إجمالي الحساب: <span id="total"></span> ريال</h3>
 
-    <table id="table">
-    </table>
+    <!-- الأزرار -->
+    <button id="showStatementBtn" class="btn">عرض كشف الحساب</button>
+    <button id="logoutBtn" class="btn">تسجيل الخروج</button>
+
+    <!-- جدول كشف الحساب -->
+    <table id="table"></table>
 </div>
 
 <script>
 const API = "https://script.google.com/macros/s/AKfycbyTBztcQHgbaYmtle4dPg0ZWIchR48lnhBZz5Z1fM1qb0RNqYMJSd-ptRcx8u58gaPF/exec";
 
+// التحقق من تسجيل الدخول
 if (!localStorage.getItem("client_id")) {
     alert("يرجى تسجيل الدخول أولاً");
     window.location = "index.html";
 }
 
-document.getElementById("clientName").innerText =
-    "كشف حساب: " + localStorage.getItem("client_name");
+document.getElementById("clientName").innerText = "كشف حساب: " + localStorage.getItem("client_name");
 
-loadClient();
+// تحميل إجمالي الحساب تلقائيًا
+loadTotal();
 
-async function loadClient() {
+async function loadTotal() {
     let res = await fetch(API, {
         method: "POST",
         body: JSON.stringify({
@@ -78,7 +177,27 @@ async function loadClient() {
     });
 
     let data = await res.json();
-    document.getElementById("total").innerText = data.total;
+    let total = Number(data.total);
+    let statusText = total >= 0 ? "عليكم" : "لكم";
+
+    const totalSpan = document.getElementById("total");
+    totalSpan.innerText = statusText + "  " +Math.abs(total) ;
+    totalSpan.style.color = total >= 0 ? "red" : "green";
+}
+
+// كشف الحساب عند النقر على الزر
+document.getElementById("showStatementBtn").addEventListener("click", loadStatement);
+
+async function loadStatement() {
+    let res = await fetch(API, {
+        method: "POST",
+        body: JSON.stringify({
+            action: "getClientData",
+            client_id: localStorage.getItem("client_id")
+        })
+    });
+
+    let data = await res.json();
 
     let html = `
         <tr>
@@ -94,15 +213,20 @@ async function loadClient() {
         <tr>
             <td>${new Date(r.date).toLocaleDateString()}</td>
             <td class="${r.type}">${r.type === 'credit' ? 'له' : 'عليه'}</td>
-            <td class="${r.type}">${r.amount}</td>
+            <td class="${r.type}">${Math.abs(r.amount)}</td>
             <td>${r.note}</td>
         </tr>`;
     });
 
     document.getElementById("table").innerHTML = html;
 }
-</script>
 
+// زر تسجيل الخروج
+document.getElementById("logoutBtn").addEventListener("click", () => {
+    localStorage.removeItem("client_id");
+    localStorage.removeItem("client_name");
+    window.location = "index.html";
+});
+</script>
 </body>
 </html>
-
