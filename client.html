@@ -28,7 +28,7 @@ h2, h3, h4, h5 {
    هيدر احترافي
 ======================= */
 .header {
-    background: linear-gradient(135deg, #003575, #0055A4);
+    background: linear-gradient(135deg, #000000, #1a1a1a, #2a2a2a);
     padding: 40px 20px 60px 20px;
     color: white;
     border-bottom-left-radius: 30px;
@@ -36,17 +36,11 @@ h2, h3, h4, h5 {
     text-align: center;
 }
 
-.client-info {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-}
-
 .client-info img {
     width: 75px;
     height: 75px;
     border-radius: 50%;
-    border: 3px solid white;
+    border: 3px solid #fff;
     object-fit: cover;
 }
 
@@ -54,6 +48,7 @@ h2, h3, h4, h5 {
     margin-top: 12px;
     font-size: clamp(18px, 2.5vw, 22px);
     font-weight: 600;
+    color: #f1f1f1;
 }
 
 /* =======================
@@ -76,7 +71,7 @@ h2, h3, h4, h5 {
 .balance-label {
     font-size: clamp(15px, 2vw, 18px);
     font-weight: bold;
-    color: #0055A4;
+    color: #444;
 }
 
 .balance-value {
@@ -85,7 +80,7 @@ h2, h3, h4, h5 {
 }
 
 #refreshBtn {
-    background: #0055A4;
+    background: #333;
     border: none;
     padding: 8px 12px;
     border-radius: 50%;
@@ -97,7 +92,7 @@ h2, h3, h4, h5 {
 }
 
 #refreshBtn:hover {
-    background: #0074C8;
+    background: #444;
     transform: scale(1.1);
 }
 
@@ -155,22 +150,23 @@ h2, h3, h4, h5 {
 
 /* زر عرض كشف الحساب الجديد */
 #showStatementBtn {
-    background: linear-gradient(135deg, #003575, #0055A4);
+    background: linear-gradient(135deg, #111, #1a1a1a, #222);
     color: white;
     border: none;
     padding: 10px 18px;
     border-radius: 12px;
-    cursor: pointer; width: 100%;
+    cursor: pointer; 
+    width: 100%;
     font-weight: bold;
     font-size: clamp(14px, 2vw, 16px);
     transition: 0.3s;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.35);
 }
 
 #showStatementBtn:hover {
     transform: translateY(-2px);
-    box-shadow: 0 6px 18px rgba(0,0,0,0.25);
-    background: linear-gradient(135deg, #0055A4, #0074C8);
+    box-shadow: 0 6px 18px rgba(0,0,0,0.45);
+    background: linear-gradient(135deg, #1a1a1a, #222, #2a2a2a);
 }
 
 
@@ -264,21 +260,22 @@ td {
 #statementContent h3 {
     text-align: center;
     margin-bottom: 15px;
-    color: #003575;
+    color: #00000; /* لون فاتح ليتناسب مع الخلفية السوداء */
 }
 
 #closeStatement {
     position: absolute;
     top: 15px;
     right: 15px;
-    background: #D13A3A;
-    color: white;
+    background: linear-gradient(135deg, #333, #444, #555);
+    color: #f1f1f1;
     border: none;
     padding: 6px 12px;
     border-radius: 8px;
     cursor: pointer;
     font-weight: bold;
 }
+
 
 .filter-dates {
     display:flex;
@@ -296,10 +293,10 @@ td {
 .footer {
     text-align: center;
     padding: 15px 10px;
-    background: #F1F5F9;
-    color: #003575;
+    background: linear-gradient(135deg, #111, #1a1a1a, #222);
+    color: #f1f1f1;
     font-size: clamp(13px, 1.5vw, 14px);
-    border-top: 1px solid #e5e7eb;
+    border-top: 1px solid #333;
     position: relative;
     bottom: 0;
     width: 100%;
@@ -312,7 +309,7 @@ td {
 
 <div class="header">
     <div class="client-info">
-        <img src="https://raw.githubusercontent.com/falahsab/jedwal/refs/heads/main/img/yemen-sat-white.png" alt="عميل">
+        <img src="https://raw.githubusercontent.com/falahsab/jedwal/refs/heads/main/img/jedwal11.png" alt="عميل">
         <h2 id="clientName"></h2>
     </div>
 </div>
@@ -357,7 +354,7 @@ td {
     </div>
 </div>
 <footer class="footer">
-    مدعوم بواسطة <strong>يمن ستلايت</strong> | 738092209
+     <strong>يمن ستلايت</strong> | 738092209
 </footer>
 <script>
 const API = "https://script.google.com/macros/s/AKfycbyTBztcQHgbaYmtle4dPg0ZWIchR48lnhBZz5Z1fM1qb0RNqYMJSd-ptRcx8u58gaPF/exec";
@@ -495,5 +492,4 @@ document.getElementById("logoutBtn").addEventListener("click", () => {
 
 </body>
 </html>
-
 
