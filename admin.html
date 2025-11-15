@@ -63,14 +63,12 @@ th { background: var(--secondary); color:white; }
     <body>
 
 <script>
-// حماية لوحة التحكم
-(function(){
-    const role = localStorage.getItem("role");
-    if (role !== "admin") {
-        localStorage.clear();
-        window.location.href = "index.html";
-    }
-})();
+// تحقق من أن المستخدم أدمن
+const role = localStorage.getItem("role"); // أو يمكنك تخزين "admin" عند تسجيل الدخول
+if (role !== "admin") {
+    alert("يجب تسجيل الدخول كأدمن للوصول إلى هذه الصفحة");
+    window.location.href = "index.html"; // إعادة توجيه لصفحة الدخول
+}
 </script>
 
 <div class="card">
@@ -270,4 +268,5 @@ document.getElementById("client_select").addEventListener("change",loadTransacti
 
 </body>
 </html>
+
 
