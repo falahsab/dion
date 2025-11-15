@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>لوحة تحكم الإدمن | بنك الراجحي</title>
+<title>لوحة تحكم الإدمن | يمن ستلايت</title>
 
 <style>
 :root {
@@ -60,7 +60,7 @@ th { background: var(--secondary); color:white; }
 </head>
 
 <body>
-    <body>
+    
 
 <script>
 // تحقق من أن المستخدم أدمن
@@ -112,7 +112,7 @@ if (role !== "admin") {
     <span class="close" onclick="closeAddClientModal()">&times;</span>
     <h3>إضافة عميل جديد</h3>
     <input id="new_name" placeholder="الاسم">
-    <input id="new_mobile" placeholder="رقم الجوال">
+    <input id="new_mobile"type="number" placeholder="رقم الجوال">
     <input id="new_username" placeholder="اسم المستخدم">
     <input id="new_password" type="password" placeholder="كلمة المرور">
     <button onclick="addClient()">إضافة العميل</button>
@@ -130,7 +130,7 @@ if (role !== "admin") {
         <option value="debit">عليه</option>
         <option value="credit">له</option>
     </select>
-    <input id="modal_note" placeholder="البيان">
+    <input id="modal_note" placeholder="البيان"autocomplete="off">
     <div style="display:flex; gap:10px; margin-top:10px;">
         <button onclick="saveTransModal()">حفظ</button>
         <button onclick="deleteTransModal()" style="background:#EF4444">حذف</button>
@@ -268,5 +268,4 @@ document.getElementById("client_select").addEventListener("change",loadTransacti
 
 </body>
 </html>
-
 
