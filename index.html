@@ -153,8 +153,19 @@ async function login() {
         console.error(err);
     }
 }
+     // تحديد مدة الجلسه
+    document.addEventListener("click", () => {
+    const expire = localStorage.getItem("session_expire");
+    if (expire && Date.now() < Number(expire)) {
+        // تمديد الجلسة تلقائياً
+        const sessionDuration = 30 * 60 * 1000; // 30 دقيقة
+        localStorage.setItem("session_expire", Date.now() + sessionDuration);
+    }
+});
+
 </script>
 
 </body>
 </html>
+
 
