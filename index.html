@@ -144,6 +144,7 @@ async function login() {
             localStorage.setItem("client_name", data.name);
             window.location = "client.html";
         } else if (data.role === "admin") {
+            localStorage.setItem("role", "admin");
             window.location = "admin.html";
         }
 
@@ -156,3 +157,4 @@ async function login() {
 
 </body>
 </html>
+
