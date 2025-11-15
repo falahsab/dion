@@ -96,10 +96,12 @@
 
     <h2>تسجيل دخول النظام</h2>
 
-    <input id="username" placeholder="اسم المستخدم">
-    <input id="password" type="password" placeholder="كلمة المرور">
+<form id="loginForm" onsubmit="login(); return false;">
+    <input id="username" name="username" placeholder="اسم المستخدم" autocomplete="username">
+    <input id="password" name="password" type="password" placeholder="كلمة المرور" autocomplete="current-password">
+    <button type="submit">دخول</button>
+</form>
 
-    <button onclick="login()">دخول</button>
 
     <p id="msg"></p>
 </div>
@@ -167,6 +169,7 @@ async function login() {
 
 </body>
 </html>
+
 
 
 
