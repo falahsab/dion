@@ -3,40 +3,72 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>لوحة تحكم الإدمن | نظام الديون</title>
+<title>لوحة تحكم الإدمن | بنك الراجحي</title>
+
 <style>
-body { font-family: "Tajawal", sans-serif; background:#f1f5f9; margin:0; padding:20px; }
-.card { max-width: 1000px; margin:auto; background:white; padding:20px; border-radius:15px; box-shadow:0 4px 12px #0001; }
-h2,h3{ margin:10px 0; color:#0f172a; }
-input, select, button { width:100%; padding:12px; margin-top:10px; border:1px solid #d1d5db; border-radius:8px; font-size:1rem; }
-button { background:#2563eb; color:white; border:none; cursor:pointer; }
-button:hover { background:#1d4ed8; }
-#msg, #clientMsg, #totalBalance { margin-top:10px; font-weight:bold; }
-table { width:100%; border-collapse:collapse; margin-top:20px; font-size:0.95rem; }
-th, td { border-bottom:1px solid #e5e7eb; padding:8px; text-align:center; }
-th { background:#f8fafc; }
+:root {
+    --primary: #00693B; 
+    --secondary: #00A651; 
+    --bg: #F5F5F5;
+    --card-bg: #FFFFFF;
+    --text: #0F172A;
+    --accent: #FFD700;
+}
+
+body { font-family: "Tajawal", sans-serif; background: var(--bg); margin:0; padding:20px; }
+
+.card { max-width: 1000px; margin:auto; background: var(--card-bg); padding:25px; border-radius:15px; box-shadow:0 4px 12px #0002; }
+h2,h3{ margin:12px 0; color: var(--primary); }
+
+input, select, button {
+    width: 100%;
+    padding:12px; margin-top:10px;
+    border:1px solid #d1d5db; border-radius:8px;
+    font-size:1rem; box-sizing:border-box;
+}
+
+button { background: var(--primary); color:white; border:none; cursor:pointer; margin-top:10px; transition:0.3s; }
+button:hover { background: var(--secondary); }
+
+#msg, #clientMsg, #total_info { margin-top:10px; font-weight:bold; }
+
+.table-container { overflow-x:auto; margin-top:20px; }
+table { width:100%; border-collapse:collapse; font-size:0.95rem; }
+th, td { border-bottom:1px solid #e5e7eb; padding:8px; text-align:center; word-break:break-word; }
+th { background: var(--secondary); color:white; }
+
 .debit { color:red; font-weight:bold; }
 .credit { color:green; font-weight:bold; }
-.edit-btn { background:#facc15; color:#1e293b; padding:5px 10px; border-radius:5px; cursor:pointer; }
-.edit-btn:hover { background:#eab308; }
-.logout-btn { background:#ef4444; margin-top:10px; width:auto; padding:10px 20px; }
-.logout-btn:hover { background:#dc2626; }
+
+.logout-btn { background:#EF4444; margin-top:10px; width:auto; padding:10px 20px; }
+.logout-btn:hover { background:#DC2626; }
+
+@media (max-width:768px){
+    .card { padding:15px; }
+    input, select, button { font-size:0.95rem; padding:10px; }
+    table { font-size:0.85rem; }
+    th, td { padding:6px; }
+}
+
 .modal { display:none; position:fixed; z-index:100; left:0; top:0; width:100%; height:100%; overflow:auto; background-color:rgba(0,0,0,0.4); }
 .modal-content { background-color:#fff; margin:10% auto; padding:20px; border-radius:10px; width:90%; max-width:400px; }
 .close { color:#aaa; float:left; font-size:28px; font-weight:bold; cursor:pointer; }
-.close:hover{color:#000;}
-@media(max-width:768px){.card{padding:15px;} input,select,button{font-size:0.9rem;} table{font-size:0.85rem;}}
+.close:hover{ color:#000; }
+
+#search_client{ margin:10px 0; padding:12px; border-radius:8px; border:1px solid #d1d5db; }
 </style>
 </head>
-<body>
 
+<body>
 <div class="card">
-    <h2>لوحة تحكم الإدمن</h2>
+    <h2>لوحة تحكم الإدمن | بنك الراجحي</h2>
     <button class="logout-btn" onclick="logout()">تسجيل الخروج</button>
 
-    <h3>إدارة العمليات المالية</h3>
-    <input type="text" id="searchClient" placeholder="ابحث عن العميل">
-    <select id="client_select"></select>
+    <h3>إضافة عملية مالية</h3>
+    <input type="text" id="search_client" placeholder="ابحث عن العميل...">
+    <select id="client_select">
+        <option value="">اختر العميل</option>
+    </select>
     <button onclick="showAddClientModal()">إضافة عميل جديد</button>
 
     <input id="amount" type="number" placeholder="المبلغ">
@@ -47,23 +79,21 @@ th { background:#f8fafc; }
     <input id="note" placeholder="البيان">
     <button onclick="addTrans()">إضافة العملية</button>
     <p id="msg"></p>
-    <p id="totalBalance"></p>
 
-    <h3>عمليات العميل</h3>
+    <h3>آخر 3 عمليات للعميل</h3>
+    <p id="total_info"></p>
     <button onclick="showAllTransactions()">عرض كل العمليات</button>
-    <table id="transTable">
-        <tr>
-            <th>ID</th>
-            <th>المبلغ</th>
-            <th>النوع</th>
-            <th>البيان</th>
-            <th>التاريخ</th>
-            <th>تعديل</th>
-        </tr>
-    </table>
+
+    <div class="table-container">
+        <table id="transTable">
+            <tr>
+                <th>ID</th><th>العميل</th><th>المبلغ</th><th>النوع</th><th>البيان</th><th>التاريخ</th>
+            </tr>
+        </table>
+    </div>
 </div>
 
-<!-- نافذة إضافة العميل -->
+<!-- نافذة إضافة عميل -->
 <div id="addClientModal" class="modal">
   <div class="modal-content">
     <span class="close" onclick="closeAddClientModal()">&times;</span>
@@ -77,40 +107,57 @@ th { background:#f8fafc; }
   </div>
 </div>
 
+<!-- نافذة تعديل/حذف العملية -->
+<div id="transModal" class="modal">
+  <div class="modal-content">
+    <span class="close" onclick="closeTransModal()">&times;</span>
+    <h3>تعديل العملية</h3>
+    <input id="modal_amount" type="number" placeholder="المبلغ">
+    <select id="modal_type">
+        <option value="debit">عليه</option>
+        <option value="credit">له</option>
+    </select>
+    <input id="modal_note" placeholder="البيان">
+    <div style="display:flex; gap:10px; margin-top:10px;">
+        <button onclick="saveTransModal()">حفظ</button>
+        <button onclick="deleteTransModal()" style="background:#EF4444">حذف</button>
+        <button onclick="closeTransModal()" style="background:#888">إلغاء</button>
+    </div>
+  </div>
+</div>
+
 <script>
-const API = "https://script.google.com/macros/s/AKfycbxGqkN-o1Wj8YwGSvrbyAuCsPYTm0mMAzQRadGiHmwH_cEKpBPRBR4S8GQDeoYIxXKh/exec"; // ضع رابط App Script
+// API الخاص بك
+const API = "https://script.google.com/macros/s/AKfycbzoGjNE5FYkiU8Jt2nMsv9Mpekk8W82ND717dX5oPuyFNWRjM54TmnnEMt-VW-PboXF/exec";
 
 // تسجيل الخروج
 function logout(){ localStorage.clear(); window.location.href="index.html"; }
 
 // نافذة إضافة عميل
 function showAddClientModal(){ document.getElementById("addClientModal").style.display="block"; }
-function closeAddClientModal(){ document.getElementById("addClientModal").style.display="none"; document.getElementById("clientMsg").innerText=""; }
+function closeAddClientModal(){ document.getElementById("addClientModal").style.display="none"; }
+
+// البحث في العملاء
+document.getElementById("search_client").addEventListener("input",function(){
+    const term=this.value.toLowerCase();
+    const options=document.getElementById("client_select").options;
+    for(let i=0;i<options.length;i++){ options[i].style.display = options[i].text.toLowerCase().includes(term)?"":"none"; }
+});
 
 // جلب العملاء
 let allClients=[];
 async function loadClients(){
-    const res=await fetch(API,{method:"POST",body:JSON.stringify({action:"getClients"})});
-    allClients=await res.json();
-    renderClientOptions(allClients);
-}
-function renderClientOptions(clients){
-    const select=document.getElementById("client_select");
-    select.innerHTML='<option value="">اختر العميل</option>';
-    clients.forEach(c=>{
+    const res = await fetch(API,{ method:"POST", body: JSON.stringify({action:"getClients"})});
+    const data = await res.json();
+    allClients = data;
+    const select = document.getElementById("client_select");
+    select.innerHTML=`<option value="">اختر العميل</option>`;
+    data.forEach(c=>{
         let opt=document.createElement("option");
-        opt.value=c.client_id;
-        opt.textContent=`${c.name} (${c.mobile})`;
+        opt.value=c.client_id; opt.textContent=`${c.name} (${c.mobile})`;
         select.appendChild(opt);
     });
 }
-
-// فلترة العملاء بالبحث
-document.getElementById("searchClient").addEventListener("input",e=>{
-    const val=e.target.value.toLowerCase();
-    const filtered=allClients.filter(c=>c.name.toLowerCase().includes(val) || c.mobile.includes(val));
-    renderClientOptions(filtered);
-});
 
 // إضافة عميل
 async function addClient(){
@@ -120,8 +167,7 @@ async function addClient(){
     const password=document.getElementById("new_password").value.trim();
     const msg=document.getElementById("clientMsg");
     if(!name||!mobile||!username||!password){ msg.innerText="يرجى تعبئة كل الحقول"; msg.style.color="red"; return; }
-
-    const res=await fetch(API,{method:"POST",body:JSON.stringify({action:"addClient",name,mobile,username,password})});
+    const res=await fetch(API,{ method:"POST", body: JSON.stringify({action:"addClient",name,mobile,username,password}) });
     const data=await res.json();
     if(data.status==="success"){ msg.innerText="تمت الإضافة بنجاح"; msg.style.color="green"; closeAddClientModal(); loadClients(); }
     else{ msg.innerText="حدث خطأ أثناء الإضافة"; msg.style.color="red"; }
@@ -137,124 +183,75 @@ async function addTrans(){
     if(!client_id||!amount||!note){ msg.innerText="يرجى تعبئة كل الحقول"; msg.style.color="red"; return; }
     if(type==="credit") amount=-Math.abs(amount); else amount=Math.abs(amount);
 
-    const res=await fetch(API,{method:"POST",body:JSON.stringify({action:"addTransaction",client_id,amount,type,note})});
+    const res=await fetch(API,{ method:"POST", body: JSON.stringify({action:"addTransaction",client_id,amount,type,note}) });
     const data=await res.json();
-    if(data.status==="success"){ msg.innerText="تمت الإضافة بنجاح"; msg.style.color="green"; loadTransactions(); }
+    if(data.status==="success"){ msg.innerText="تمت الإضافة بنجاح"; msg.style.color="green"; document.getElementById("amount").value=""; document.getElementById("note").value=""; loadTransactions(); }
     else{ msg.innerText="حدث خطأ أثناء الإضافة"; msg.style.color="red"; }
 }
 
-// تحميل آخر 3 عمليات للعميل
-let currentClientId="";
-async function loadTransactions(limit=3){
-    const client_id=document.getElementById("client_select").value;
-    if(!client_id) return;
-    currentClientId=client_id;
-    const res=await fetch(API,{method:"POST",body:JSON.stringify({action:"getClientData",client_id})});
+// تحميل العمليات
+let currentClientId=""; let clientTransactions=[];
+async function loadTransactions(){
+    currentClientId=document.getElementById("client_select").value;
+    if(!currentClientId) return;
+    const res=await fetch(API,{ method:"POST", body: JSON.stringify({action:"getClientData", client_id: currentClientId}) });
     const data=await res.json();
-
-    let list = limit>0 ? data.list.slice(-limit).reverse() : data.list.reverse();
-    let total = data.total;
-
-    const table=document.getElementById("transTable");
-    table.innerHTML=`
-        <tr>
-            <th>ID</th>
-            <th>المبلغ</th>
-            <th>النوع</th>
-            <th>البيان</th>
-            <th>التاريخ</th>
-            <th>تعديل</th>
-        </tr>`;
-    list.forEach(t=>{
-        let row=table.insertRow();
-        row.innerHTML=`
-            <td>${t.trans_id}</td>
-            <td><input type="number" id="amount_${t.trans_id}" value="${Math.abs(t.amount)}" style="width:80px;"></td>
-            <td>
-                <select id="type_${t.trans_id}">
-                    <option value="debit" ${t.type==="debit"?"selected":""}>عليه</option>
-                    <option value="credit" ${t.type==="credit"?"selected":""}>له</option>
-                </select>
-            </td>
-            <td><input type="text" id="note_${t.trans_id}" value="${t.note}" style="width:120px;"></td>
-            <td>${new Date(t.date).toLocaleDateString()}</td>
-            <td><button class="edit-btn" onclick="updateTransaction('${t.trans_id}')">حفظ</button></td>
-        `;
-    });
-
-    document.getElementById("totalBalance").innerText=`إجمالي الحساب: ${total>=0?total+" عليه":"-"+Math.abs(total)+" له"}`;
+    if(data.status!=="success") return;
+    clientTransactions=data.list;
+    let total=data.total;
+    document.getElementById("total_info").innerText=`إجمالي الرصيد: ${total>=0?"عليه "+total:"له "+Math.abs(total)} ريال`;
+    renderTransactions(clientTransactions.slice(-3));
 }
+function showAllTransactions(){ renderTransactions(clientTransactions); }
 
-// تعديل العملية
-<!-- ...ابقى على نفس الكود العلوي حتى دالة addClient -->
-
-async function addClient(){
-    const name=document.getElementById("new_name").value.trim();
-    const mobile=document.getElementById("new_mobile").value.trim();
-    const username=document.getElementById("new_username").value.trim();
-    const password=document.getElementById("new_password").value.trim();
-    const msg=document.getElementById("clientMsg");
-    if(!name||!mobile||!username||!password){ msg.innerText="يرجى تعبئة كل الحقول"; msg.style.color="red"; return; }
-
-    const res=await fetch(API,{method:"POST",body:JSON.stringify({action:"addClient",name,mobile,username,password})});
-    const data=await res.json();
-    if(data.status==="success"){
-        msg.innerText="تمت الإضافة بنجاح"; msg.style.color="green"; 
-        closeAddClientModal(); 
-        document.getElementById("new_name").value="";
-        document.getElementById("new_mobile").value="";
-        document.getElementById("new_username").value="";
-        document.getElementById("new_password").value="";
-        loadClients(); 
-    }
-    else{ msg.innerText="حدث خطأ أثناء الإضافة"; msg.style.color="red"; }
+let currentTransId=null;
+function openTransModal(trans_id){
+    currentTransId=trans_id;
+    const t=clientTransactions.find(tr=>tr.trans_id==trans_id);
+    if(!t) return;
+    document.getElementById("modal_amount").value=Math.abs(t.amount);
+    document.getElementById("modal_type").value=t.type;
+    document.getElementById("modal_note").value=t.note;
+    document.getElementById("transModal").style.display="block";
 }
+function closeTransModal(){ document.getElementById("transModal").style.display="none"; currentTransId=null; }
 
-// إضافة عملية مالية
-async function addTrans(){
-    const client_id=document.getElementById("client_select").value;
-    let amount=Number(document.getElementById("amount").value);
-    const type=document.getElementById("type").value;
-    const note=document.getElementById("note").value;
-    const msg=document.getElementById("msg");
-    if(!client_id||!amount||!note){ msg.innerText="يرجى تعبئة كل الحقول"; msg.style.color="red"; return; }
+async function saveTransModal(){
+    if(!currentTransId) return;
+    let amount=Number(document.getElementById("modal_amount").value);
+    const type=document.getElementById("modal_type").value;
+    const note=document.getElementById("modal_note").value;
     if(type==="credit") amount=-Math.abs(amount); else amount=Math.abs(amount);
-
-    const res=await fetch(API,{method:"POST",body:JSON.stringify({action:"addTransaction",client_id,amount,type,note})});
+    const res=await fetch(API,{ method:"POST", body: JSON.stringify({ action:"updateTransaction", trans_id:currentTransId, amount, type, note }) });
     const data=await res.json();
-    if(data.status==="success"){
-        msg.innerText="تمت الإضافة بنجاح"; msg.style.color="green"; 
-        document.getElementById("amount").value="";
-        document.getElementById("note").value="";
-        document.getElementById("type").value="debit";
-        loadTransactions();
-    } else{ msg.innerText="حدث خطأ أثناء الإضافة"; msg.style.color="red"; }
+    if(data.success||data.status==="success"){ alert("تم الحفظ بنجاح"); closeTransModal(); loadTransactions(); }
+    else alert("حدث خطأ أثناء الحفظ");
 }
 
-// تعديل العملية
-async function updateTransaction(trans_id){
-    const amount=Number(document.getElementById(`amount_${trans_id}`).value);
-    const type=document.getElementById(`type_${trans_id}`).value;
-    const note=document.getElementById(`note_${trans_id}`).value;
-
-    const res=await fetch(API,{method:"POST",body:JSON.stringify({action:"updateTransaction",trans_id,amount,type,note})});
+async function deleteTransModal(){
+    if(!currentTransId) return;
+    if(!confirm("هل أنت متأكد من حذف العملية؟")) return;
+    const res=await fetch(API,{ method:"POST", body: JSON.stringify({action:"deleteTransaction",trans_id:currentTransId}) });
     const data=await res.json();
-    // تحقق من الحقل الصحيح للنجاح
-    if(data.status==="success" || data.success===true){
-        alert("تم الحفظ بنجاح");
-        loadTransactions(currentClientId ? 0 : 3);
-    } else{ alert("حدث خطأ أثناء الحفظ"); }
+    if(data.success||data.status==="success"){ alert("تم الحذف بنجاح"); closeTransModal(); loadTransactions(); }
+    else alert("حدث خطأ أثناء الحذف");
 }
 
+function renderTransactions(transactions){
+    const table=document.getElementById("transTable");
+    table.innerHTML=`<tr><th>ID</th><th>العميل</th><th>المبلغ</th><th>النوع</th><th>البيان</th><th>التاريخ</th></tr>`;
+    const clientName=allClients.find(c=>c.client_id==currentClientId)?.name || "غير معروف";
+    transactions.forEach(t=>{
+        let row=table.insertRow();
+        row.onclick=()=>openTransModal(t.trans_id);
+        row.innerHTML=`<td>${t.trans_id}</td><td>${clientName}</td><td>${Math.abs(t.amount)}</td><td>${t.type==='debit'?'عليه':'له'}</td><td>${t.note}</td><td>${new Date(t.date).toLocaleDateString()}</td>`;
+    });
+}
 
-// عرض كل العمليات
-function showAllTransactions(){ loadTransactions(0); }
-
-// إعادة تحميل العمليات عند تغيير العميل
-document.getElementById("client_select").addEventListener("change",()=>loadTransactions());
-
-// تحميل العملاء عند فتح الصفحة
+// تحميل العملاء عند الفتح
 loadClients();
+document.getElementById("client_select").addEventListener("change",loadTransactions);
 </script>
+
 </body>
 </html>
