@@ -227,6 +227,17 @@ document.getElementById("logoutBtn").addEventListener("click", () => {
     localStorage.removeItem("client_name");
     window.location = "index.html";
 });
+    // تحديد مدةالجلسه
+    document.addEventListener("click", () => {
+    const expire = localStorage.getItem("session_expire");
+    if (expire && Date.now() < Number(expire)) {
+        // تمديد الجلسة تلقائياً
+        const sessionDuration = 2 * 60 * 1000; // 30 دقيقة
+        localStorage.setItem("session_expire", Date.now() + sessionDuration);
+    }
+});
+
 </script>
 </body>
 </html>
+
