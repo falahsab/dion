@@ -13,6 +13,7 @@ body {
     font-family: "Tajawal", sans-serif;
     background: #F2F4F7;
     margin: 0;
+    padding-bottom: 60px; /* ارتفاع الفوتر تقريبا */
 }
 
 * {
@@ -297,9 +298,11 @@ td {
     color: #f1f1f1;
     font-size: clamp(13px, 1.5vw, 14px);
     border-top: 1px solid #333;
-    position: relative;
+
+    position: fixed; /* مثبت أسفل */
     bottom: 0;
     width: 100%;
+    z-index: 1000;
 }
 
 </style>
