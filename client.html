@@ -170,7 +170,6 @@ h2, h3, h4, h5 {
     background: linear-gradient(135deg, #1a1a1a, #222, #2a2a2a);
 }
 
-
 /* ===== جدول كشف الحساب ===== */
 table {
     width: 100%;
@@ -261,7 +260,7 @@ td {
 #statementContent h3 {
     text-align: center;
     margin-bottom: 15px;
-    color: #00000; /* لون فاتح ليتناسب مع الخلفية السوداء */
+    color: #00000;
 }
 
 #closeStatement {
@@ -276,7 +275,6 @@ td {
     cursor: pointer;
     font-weight: bold;
 }
-
 
 .filter-dates {
     display:flex;
@@ -299,7 +297,7 @@ td {
     font-size: clamp(13px, 1.5vw, 14px);
     border-top: 1px solid #333;
 
-    position: fixed; /* مثبت أسفل */
+    position: fixed;
     bottom: 0;
     width: 100%;
     z-index: 1000;
@@ -333,12 +331,12 @@ td {
 
     <div class="last-ops-header">
         <h3>آخر 5 عمليات</h3>
-       
     </div>
 
     <div class="last-ops">
         <div id="lastOpsList"></div>
     </div>
+
  <button id="showStatementBtn">عرض كل الحساب</button>
 </div>
 
@@ -347,8 +345,10 @@ td {
 ======================= -->
 <div id="statementModal">
     <div id="statementContent">
+
         <button id="closeStatement">رجوع</button>
         <h3>كشف الحساب </h3>
+        <span class="balance-value" id="balanceValue"></span>
         <div class="filter-dates">
             <label>من: <input type="date" id="fromDate"></label>
             <label>إلى: <input type="date" id="toDate"></label>
@@ -356,9 +356,11 @@ td {
         <div id="statementList"></div>
     </div>
 </div>
+
 <footer class="footer">
      <strong>يمن ستلايت</strong> | 738092209
 </footer>
+
 <script>
 const API = "https://script.google.com/macros/s/AKfycbyTBztcQHgbaYmtle4dPg0ZWIchR48lnhBZz5Z1fM1qb0RNqYMJSd-ptRcx8u58gaPF/exec";
 
@@ -403,28 +405,31 @@ async function loadTotal() {
 /* زر التحديث */
 document.getElementById("refreshBtn").addEventListener("click", loadTotal);
 
-/* آخر 5 عمليات */
+/* ===== ترتيب أحدث 5 عمليات ===== */
 function showLast5(list) {
     let box = document.getElementById("lastOpsList");
     box.innerHTML = "";
 
-    list.slice(0, 5).forEach(r => {
-        const typeClass = r.type === 'credit' ? 'credit' : 'debit';
-        box.innerHTML += `
-        <div class="op-card">
-            <div class="op-details">
-                <div class="op-date">${new Date(r.date).toLocaleDateString()}</div>
-                <div class="op-note">${r.note}</div>
+    list
+        .sort((a, b) => new Date(b.date) - new Date(a.date))  /* ← الترتيب الجديد */
+        .slice(0, 5)
+        .forEach(r => {
+            const typeClass = r.type === 'credit' ? 'credit' : 'debit';
+            box.innerHTML += `
+            <div class="op-card">
+                <div class="op-details">
+                    <div class="op-date">${new Date(r.date).toLocaleDateString()}</div>
+                    <div class="op-note">${r.note}</div>
+                </div>
+                <div class="op-amount ${typeClass}">
+                    ${r.type === 'credit' ? '+' : '-'}${Math.abs(r.amount)}
+                </div>
             </div>
-            <div class="op-amount ${typeClass}">
-                ${r.type === 'credit' ? '+' : '-'}${Math.abs(r.amount)}
-            </div>
-        </div>
-        `;
-    });
+            `;
+        });
 }
 
-/* عرض كشف الحساب في نافذة منبثقة */
+/* عرض كشف الحساب */
 document.getElementById("showStatementBtn").addEventListener("click", async () => {
     document.getElementById("statementModal").style.display = "block";
 
@@ -457,8 +462,12 @@ document.getElementById("showStatementBtn").addEventListener("click", async () =
         });
     }
 
-    renderOperations(data.list);
+    /* ← ترتيب كامل العمليات من الأحدث إلى الأقدم */
+    renderOperations(
+        data.list.sort((a, b) => new Date(b.date) - new Date(a.date))
+    );
 
+    /* فلترة التاريخ */
     document.getElementById("fromDate").addEventListener("change", filterOps);
     document.getElementById("toDate").addEventListener("change", filterOps);
 
@@ -476,11 +485,14 @@ document.getElementById("showStatementBtn").addEventListener("click", async () =
             return true;
         });
 
+        /* ← ترتيب نتائج الفلترة أيضاً */
+        filtered.sort((a, b) => new Date(b.date) - new Date(a.date));
+
         renderOperations(filtered);
     }
 });
 
-/* زر إغلاق نافذة كشف الحساب */
+/* إغلاق كشف الحساب */
 document.getElementById("closeStatement").addEventListener("click", () => {
     document.getElementById("statementModal").style.display = "none";
 });
@@ -495,4 +507,3 @@ document.getElementById("logoutBtn").addEventListener("click", () => {
 
 </body>
 </html>
-
