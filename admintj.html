@@ -106,7 +106,7 @@ if(localStorage.getItem("role")!=="admin"){ alert("يجب تسجيل الدخو�
 </div>
 
 <button onclick="showClientsBalances()" style="background:#0b74de">عرض جميع العملاء وصافي حساباتهم</button>
-<button onclick="exportBackup()" style="background:#444;margin-top:10px;">تنزيل نسخة احتياطية</button>
+
 
 </div>
 
@@ -162,7 +162,10 @@ if(localStorage.getItem("role")!=="admin"){ alert("يجب تسجيل الدخو�
         </thead>
         <tbody></tbody>
       </table>
+      <button onclick="printClientsList()" style="background:#0b74de; color:white; margin-top:10px;">طباعة قائمة العملاء</button>
+
   </div>
+  
 </div>
 
 <script>
@@ -374,11 +377,6 @@ function printTransactions() {
 }
 
 
-
-
-// نسخة احتياطية
-function exportBackup(){ const data={clients:allClients,transactions:clientTransactions}; const blob=new Blob([JSON.stringify(data,null,2)],{type:"application/json"}); const url=URL.createObjectURL(blob); const a=document.createElement("a"); a.href=url; a.download="backup.json"; a.click(); }
-
 // عرض العملاء وصافي الحساب
 async function showClientsBalances(){
     const res=await fetch(API,{method:"POST",body:JSON.stringify({action:"getClientsBalance"})});
@@ -413,6 +411,94 @@ function updateStats(){
 
 loadClients();
 qs("client_select").addEventListener("change", loadTransactions);
+
+  // طباعة قائمة العملاء وصافي حساباتهم
+function printClientsList() {
+    const rows = Array.from(document.querySelectorAll("#clientsBalanceTable tbody tr"))
+                      .filter(r => r.style.display !== "none"); // تجاهل الصفوف المخفية
+
+    if (!rows.length) return alert("لا توجد بيانات للطباعة");
+
+    const companyName = "شركة يمن ستلايت";
+    const companyPhone = "123456789";
+    const logoUrl = ""; // شعار الشركة
+
+    const html = `
+    <html lang="ar" dir="rtl">
+    <head>
+        <meta charset="UTF-8">
+        <style>
+            body { font-family: "Tajawal", sans-serif; direction: rtl; margin:20px; color:#0F172A; }
+            header { display:flex; justify-content: space-between; align-items:center; border-bottom: 2px solid #00693B; padding-bottom:10px; margin-bottom:20px; }
+            header img { height:60px; }
+            header .report-info { text-align: center; flex:1; }
+            header .report-info h2 { margin:0; color:#00693B; font-size:1.3em; }
+            header .report-info p { margin:0; font-size:0.95em; }
+            table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+            th, td { border: 1px solid #444; padding: 10px; text-align: center; }
+            th { background: #00A651; color: white; }
+            tbody tr:nth-child(even) { background-color: #f2f2f2; }
+            tfoot td { font-weight: bold; font-size: 1.05em; }
+            footer { margin-top: 40px; text-align: left; font-weight: bold; font-size:0.9em; }
+            @media print {
+                body { margin: 0; }
+                table { page-break-inside: auto; }
+                tr { page-break-inside: avoid; page-break-after: auto; }
+                thead { display: table-header-group; }
+                tfoot { display: table-footer-group; }
+                footer { position: fixed; bottom: 0; left: 20px; }
+            }
+        </style>
+    </head>
+    <body>
+        <header>
+            ${logoUrl ? `<img src="${logoUrl}" alt="Logo">` : '<div style="width:60px;"></div>'}
+            <div class="report-info">
+                <h2>قائمة العملاء وصافي الحساب</h2>
+                <p>عدد العملاء: ${rows.length}</p>
+            </div>
+            <div style="width:60px;"></div>
+        </header>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>العميل</th>
+                    <th>الجوال</th>
+                    <th>صافي الحساب</th>
+                </tr>
+            </thead>
+            <tbody>
+                ${rows.map(r => {
+                    const name = r.children[1].textContent;
+                    const mobile = r.children[2].textContent;
+                    const totalText = r.children[3].textContent.trim(); // مثال: "عليه 500" أو "له 200"
+                    
+                    // تحديد اللون
+                    const color = totalText.startsWith("عليه") ? "red" : "green";
+
+                    return `<tr>
+                                <td>${name}</td>
+                                <td>${mobile}</td>
+                                <td style="color:${color}; font-weight:bold;">${totalText}</td>
+                            </tr>`;
+                }).join('')}
+            </tbody>
+        </table>
+
+        <footer>${companyName} | ${companyPhone}</footer>
+    </body>
+    </html>
+    `;
+
+    const win = window.open("", "_blank");
+    win.document.title = " "; // لتجنب about:blank
+    win.document.write(html);
+    win.document.close();
+    win.focus();
+    setTimeout(() => win.print(), 500);
+}
+
 
 </script>
 
