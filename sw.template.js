@@ -1,6 +1,5 @@
-// sw.template.js
-const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbXXXX/exec"; // ضع رابط مشروع Apps Script هنا
-const SIGN_KEY = "__SIGN_KEY__"; // سيتم استبداله تلقائياً عبر GitHub Actions
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbygL4RTYmQ3AtnH9Pw62w_zu6bZzr9d5u2cDAFhL8E6n0BzExmvJAOg9rTxatgAJdw2/exec"; // رابط proxy.gs Web App
+const SIGN_KEY = "__SIGN_KEY__";
 
 self.addEventListener('install', () => self.skipWaiting());
 self.addEventListener('activate', () => clients.claim());
@@ -23,7 +22,7 @@ async function proxyRequest(req){
   const signature = await hmac(SIGN_KEY,message);
   const domain = location.origin + location.pathname;
   const url = `${SCRIPT_URL}?timestamp=${timestamp}&nonce=${nonce}&signature=${signature}&domain=${encodeURIComponent(domain)}&path=${encodeURIComponent(path)}&bodyHash=${encodeURIComponent(bodyHash)}`;
-  
+
   const fetchOpts = { method };
   if(method==="POST"){
     fetchOpts.body = body;
