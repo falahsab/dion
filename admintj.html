@@ -73,23 +73,28 @@ if(localStorage.getItem("role")!=="admin"){ alert("يجب تسجيل الدخو�
     <div class="stat-box" id="stat_total">---</div>
     <div class="stat-box" id="stat_last">---</div>
 </div>
-
+<button type="button" onclick="openModal('addClientModal')">إضافة عميل جديد</button>
 <h3>إضافة عملية مالية</h3>
 
 <select id="client_select">
     <option value="">اختر العميل</option>
 </select>
 
-<input id="client_search" placeholder="بحث عن عميل..." oninput="filterClientSelect()">
-
-<button type="button" onclick="openModal('addClientModal')">إضافة عميل جديد</button>
 
 <input id="amount" type="number" placeholder="المبلغ">
 <select id="type">
     <option value="debit">عليه</option>
     <option value="credit">له</option>
 </select>
-<input id="note" placeholder="البيان" autocomplete="off">
+<input type="text" style="display:none" autocomplete="username">
+<input type="password" style="display:none" autocomplete="new-password">
+
+<input id="note" name="field987" placeholder="البيان"
+       autocomplete="off"
+       autofill="off"
+       data-lpignore="true"
+       autocapitalize="off"
+       spellcheck="false">
 <button id="addTransBtn" type="button" onclick="addTrans()">إضافة العملية</button>
 
 <p id="msg"></p>
@@ -255,22 +260,56 @@ function showAllTransactions(){ renderTransactions(clientTransactions); }
 
 // جدول العمليات
 function renderTransactions(transactions){
-    const table=qs("transTable"); table.innerHTML="";
-    const header=["ID","العميل","المبلغ","النوع","البيان","التاريخ","واتساب"];
-    const trH=document.createElement("tr"); header.forEach(h=>{const th=document.createElement("th"); th.textContent=h; trH.appendChild(th);}); table.appendChild(trH);
-    const client=allClients.find(c=>c.client_id==currentClientId)||{};
-    const clientName=client.name||""; const clientMobile=client.mobile||"";
-    transactions.forEach(t=>{
-        const row=table.insertRow(); row.onclick=()=>openTransModal(t.trans_id);
-        const cells=[t.trans_id,clientName,Math.abs(t.amount),t.type==="debit"?"عليه":"له",t.note,new Date(t.date).toLocaleDateString()];
-        cells.forEach((c,i)=>{ const td=row.insertCell(); td.textContent=c; if(i===2) td.className=t.type==="debit"?"debit":"credit";});
-        const waCell=row.insertCell(); const btn=document.createElement("button"); btn.className="wa-btn"; btn.innerHTML=`<img src="${waIcon}"> واتساب`;
-        btn.onclick=e=>{ e.stopPropagation(); const total=clientTransactions.reduce((s,x)=>s+Number(x.amount),0);
-            const msg=`العميل: ${clientName}\nالمبلغ: ${Math.abs(t.amount)} ريال\nالنوع: ${t.type==="debit"?"عليه":"له"}\nالبيان: ${t.note}\n-----------------\nصافي الحساب: ${total>=0?"عليه "+total:"له "+Math.abs(total)} ريال`;
-            window.open(`https://wa.me/${clientMobile}?text=${encodeURIComponent(msg)}`); };
+    const table = qs("transTable");
+    table.innerHTML = "";
+
+    // رؤوس الأعمدة الجديدة بدون ID واسم العميل
+    const header = ["المبلغ","النوع","البيان","التاريخ","واتساب"];
+    const trH = document.createElement("tr");
+    header.forEach(h => {
+        const th = document.createElement("th");
+        th.textContent = h;
+        trH.appendChild(th);
+    });
+    table.appendChild(trH);
+
+    const client = allClients.find(c => c.client_id == currentClientId) || {};
+    const clientName = client.name || "";
+    const clientMobile = client.mobile || "";
+
+    transactions.forEach(t => {
+        const row = table.insertRow();
+        row.onclick = () => openTransModal(t.trans_id);
+
+        // خلايا الجدول بدون ID واسم العميل
+        const cells = [
+            Math.abs(t.amount),
+            t.type === "debit" ? "عليه" : "له",
+            t.note,
+            new Date(t.date).toLocaleDateString()
+        ];
+
+        cells.forEach((c, i) => {
+            const td = row.insertCell();
+            td.textContent = c;
+            if (i === 0) td.className = t.type === "debit" ? "debit" : "credit"; // تلوين المبلغ
+        });
+
+        // زر واتساب
+        const waCell = row.insertCell();
+        const btn = document.createElement("button");
+        btn.className = "wa-btn";
+        btn.innerHTML = `<img src="${waIcon}"> واتساب`;
+        btn.onclick = e => {
+            e.stopPropagation();
+            const total = clientTransactions.reduce((s, x) => s + Number(x.amount), 0);
+            const msg = `العميل: ${clientName}\nالمبلغ: ${Math.abs(t.amount)} ريال\nالنوع: ${t.type === "debit" ? "عليه" : "له"}\nالبيان: ${t.note}\n-----------------\nصافي الحساب: ${total >= 0 ? "عليه "+total : "له "+Math.abs(total)} ريال`;
+            window.open(`https://wa.me/${clientMobile}?text=${encodeURIComponent(msg)}`);
+        };
         waCell.appendChild(btn);
     });
 }
+
 
 // تعديل وحذف العملية
 function openTransModal(id){ currentTransId=id; const t=clientTransactions.find(x=>x.trans_id==id); if(!t) return; qs("modal_amount").value=Math.abs(t.amount); qs("modal_type").value=t.type; qs("modal_note").value=t.note; openModal("transModal"); }
