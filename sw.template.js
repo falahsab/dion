@@ -1,6 +1,5 @@
 const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbygL4RTYmQ3AtnH9Pw62w_zu6bZzr9d5u2cDAFhL8E6n0BzExmvJAOg9rTxatgAJdw2/exec"; // رابط proxy.gs Web App
-const SIGN_KEY = "f3a9d7c2b1e4f89012a3c5d6e7f890ab12c3d4e5f6a7b89012c3d4e5f6a7b890
-";
+const SIGN_KEY = "f3a9d7c2b1e4f89012a3c5d6e7f890ab12c3d4e5f6a7b89012c3d4e5f6a7b890";
 
 self.addEventListener('install', () => self.skipWaiting());
 self.addEventListener('activate', () => clients.claim());
