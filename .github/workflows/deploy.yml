@@ -21,26 +21,17 @@ jobs:
 
       - name: Build sw.js from template
         run: |
-          if [ -f "./sw.template.js" ]; then
-            sed "s|__SIGN_KEY__|${{ secrets.SIGN_KEY }}|g" ./sw.template.js > ./sw.js
-          else
-            echo "sw.template.js not found, skipping"
-          fi
+          sed "s|__SIGN_KEY__|${{ secrets.SIGN_KEY }}|g" ./sw.template.js > ./sw.js
 
       - name: Prepare dist folder
         run: |
           rm -rf ./dist
           mkdir -p ./dist
-          # انسخ جميع الملفات الأساسية إلى dist
           cp index.html ./dist/
           cp sw.js ./dist/
-          # إذا لديك مجلد assets أو css أو js انسخه أيضاً
           for f in assets css js images; do
             if [ -d "./$f" ]; then cp -r "./$f" ./dist/; fi
           done
-
-      - name: List dist folder (debug)
-        run: ls -la ./dist || true
 
       - name: Upload artifact for GitHub Pages
         uses: actions/upload-pages-artifact@v1
