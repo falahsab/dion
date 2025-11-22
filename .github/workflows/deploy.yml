@@ -1,42 +1,24 @@
-name: Build & Deploy Dion Project
+name: Secure Deploy
 
 on:
   push:
-    branches:
-      - main
-  workflow_dispatch:
-
-permissions:
-  pages: write
-  id-token: write
-  contents: read
+    branches: ["main"]
 
 jobs:
-  build-and-deploy:
+  build:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v3
 
-      - name: Build sw.js from template
+      - name: Create secure config
         run: |
-          sed "s|__SIGN_KEY__|${{ secrets.SIGN_KEY }}|g" ./sw.template.js > ./sw.js
+          echo "const API='${{ secrets.PROXY_URL }}';" > config.js
+          echo "const SECRET='${{ secrets.GOOGLE_SECRET }}';" >> config.js
+          echo "const ADMIN_TOKEN='${{ secrets.ADMIN_TOKEN }}';" >> config.js
 
-      - name: Prepare dist folder
-        run: |
-          rm -rf ./dist
-          mkdir -p ./dist
-          cp index.html ./dist/
-          cp sw.js ./dist/
-          for f in assets css js images; do
-            if [ -d "./$f" ]; then cp -r "./$f" ./dist/; fi
-          done
-
-      - name: Upload artifact for GitHub Pages
-        uses: actions/upload-pages-artifact@v1
+      - name: Deploy
+        uses: peaceiris/actions-gh-pages@v3
         with:
-          path: ./dist
-
-      - name: Deploy to GitHub Pages
-        uses: actions/deploy-pages@v1
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: .
