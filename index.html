@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>تسجيل دخول العميل | نظام الديون</title>
 
+<!-- =======================  CSS  ======================= -->
 <style>
     body {
         font-family: "Tajawal", sans-serif;
@@ -16,6 +17,7 @@
         align-items: center;
         justify-content: center;
     }
+
     .card {
         width: 100%;
         max-width: 400px;
@@ -26,6 +28,7 @@
         text-align: center;
         box-sizing: border-box;
     }
+
     .logo {
         width: 100px;
         height: 100px;
@@ -33,10 +36,12 @@
         display: block;
         object-fit: contain;
     }
+
     h2 {
         margin-bottom: 20px;
         color: #0f172a;
     }
+
     input {
         width: 100%;
         padding: 12px;
@@ -46,6 +51,7 @@
         font-size: 15px;
         box-sizing: border-box;
     }
+
     button {
         width: 100%;
         padding: 12px;
@@ -58,14 +64,36 @@
         cursor: pointer;
         transition: 0.3s;
     }
-    button:hover { background: #1d4ed8; }
-    #msg { margin-top: 15px; color: red; font-weight: bold; }
+
+    button:hover {
+        background: #1d4ed8;
+    }
+
+    #msg {
+        margin-top: 15px;
+        color: red;
+        font-weight: bold;
+    }
+
+    @media (max-width: 500px){
+        .card {
+            padding: 20px 15px 30px 15px;
+        }
+        .logo {
+            width: 80px;
+            height: 80px;
+        }
+    }
 </style>
 </head>
+
 <body>
 
+<!-- =======================  HTML  ======================= -->
 <div class="card">
+    <!-- شعار الصفحة -->
     <img src="https://raw.githubusercontent.com/falahsab/jedwal/refs/heads/main/img/yemen-sat.png" alt="لوغو" class="logo">
+
     <h2>تسجيل دخول النظام</h2>
 
 <form id="loginForm" onsubmit="login(); return false;">
@@ -74,22 +102,20 @@
     <button type="submit">دخول</button>
 </form>
 
+
     <p id="msg"></p>
 </div>
 
+<!-- =======================  JavaScript  ======================= -->
 <script>
-const API = "/dion/api/proxy";
-
-if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register("/dion/sw.js")
-    .then(() => console.log("Service Worker مسجّل"))
-    .catch(err => console.error("فشل تسجيل SW:", err));
-}
+// رابط السكربت الصحيح الذي يدعم العملاء والأدمن
+const API = "https://script.google.com/macros/s/AKfycbzLK-B65thu83TppK8saKJA4pLNvsXYaEZVOMRzot61jrS73B_AzItqxYssG46gE8gF/exec";
 
 async function login() {
     let username = document.getElementById("username").value.trim();
     let password = document.getElementById("password").value.trim();
     let msg = document.getElementById("msg");
+
     msg.innerText = "";
 
     if (username === "" || password === "") {
@@ -100,7 +126,11 @@ async function login() {
     try {
         let res = await fetch(API, {
             method: "POST",
-            body: JSON.stringify({ action: "login", username, password })
+            body: JSON.stringify({
+                action: "login",
+                username,
+                password
+            })
         });
 
         let data = await res.json();
@@ -110,6 +140,7 @@ async function login() {
             return;
         }
 
+        // حفظ بيانات العميل أو الانتقال للأدمن
         if (data.role === "client") {
             localStorage.setItem("client_id", data.client_id);
             localStorage.setItem("client_name", data.name);
@@ -124,15 +155,20 @@ async function login() {
         console.error(err);
     }
 }
-
-document.addEventListener("click", () => {
+     // تحديد مدة الجلسه
+    document.addEventListener("click", () => {
     const expire = localStorage.getItem("session_expire");
     if (expire && Date.now() < Number(expire)) {
-        const sessionDuration = 30 * 60 * 1000;
+        // تمديد الجلسة تلقائياً
+        const sessionDuration = 30 * 60 * 1000; // 30 دقيقة
         localStorage.setItem("session_expire", Date.now() + sessionDuration);
     }
 });
+
 </script>
 
 </body>
 </html>
+
+
+
