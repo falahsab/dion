@@ -588,6 +588,11 @@ function printClientsList() {
 }
 
 
+//جهات الاتصال
+function closePopup() {
+    document.getElementById("numberPopup").style.display = "none";
+}
+
 document.getElementById("pickContact").addEventListener("click", async () => {
     if (!("contacts" in navigator && "select" in navigator.contacts)) {
         alert("المتصفح لا يدعم اختيار جهات الاتصال");
@@ -602,24 +607,20 @@ document.getElementById("pickContact").addEventListener("click", async () => {
              .replace(/-/g, "")     // إزالة الشرطات
              .replace(/\(/g, "")    // إزالة (
              .replace(/\)/g, "");   // إزالة )
-
-        // إزالة أي شكل لمفتاح اليمن
         if (n.startsWith("+967")) n = n.slice(4);
         else if (n.startsWith("00967")) n = n.slice(5);
         else if (n.startsWith("967")) n = n.slice(3);
-
-        // إزالة الصفر البادئ إذا موجود
-        n = n.replace(/^0/, "");
+        n = n.replace(/^0/, "");    // إزالة الصفر البادئ
         return n;
     });
 
-    // ✅ اختيار الرقم الأول بعد التنسيق
+    // إذا رقم واحد فقط
     if (numbers.length === 1) {
         document.getElementById("new_mobile").value = numbers[0];
         return;
     }
 
-    // ✅ إذا أكثر من رقم، عرض popup للاختيار
+    // عرض popup للاختيار
     const listDiv = document.getElementById("numbersList");
     listDiv.innerHTML = "";
 
@@ -628,10 +629,10 @@ document.getElementById("pickContact").addEventListener("click", async () => {
         btn.textContent = num;
         btn.style.cssText =
             "display:block;width:100%;margin:5px 0;padding:8px;border:none;background:#28a745;color:white;border-radius:6px;";
-        btn.onclick = () => {
-            document.getElementById("new_mobile").value = num;
-            closePopup();
-        };
+        btn.addEventListener("click", () => {
+            document.getElementById("new_mobile").value = num; // هنا يلصق الرقم
+            closePopup(); // إغلاق البوب أب بعد الاختيار
+        });
         listDiv.appendChild(btn);
     });
 
