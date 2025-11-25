@@ -146,7 +146,8 @@ if(localStorage.getItem("role")!=="admin"){ alert("يجب تسجيل الدخو�
     <h3>إضافة عميل جديد</h3>
     <input id="new_name" placeholder="الاسم">
  <div class="input-group">
-    <input id="new_mobile" type="number" placeholder="رقم الجوال" readonly>
+    <input id="new_mobile" type="tel" placeholder="رقم الجوال">
+
     <button class="pick-btn" id="pickContact">📱</button>
 </div>
 
@@ -586,39 +587,6 @@ function printClientsList() {
     setTimeout(() => win.print(), 500);
 }
 
-document.getElementById("pickContact").addEventListener("click", async () => {
-    if (!("contacts" in navigator && "select" in navigator.contacts)) {
-        alert("المتصفح لا يدعم اختيار جهات الاتصال");
-        return;
-    }
-
-    try {
-        const contacts = await navigator.contacts.select(["tel"], { multiple: false });
-
-        if (!contacts.length || !contacts[0].tel.length) return;
-
-        let numbers = contacts[0].tel;
-
-        // إذا كان هناك أكثر من رقم لنفس الشخص
-        let number = numbers.length === 1
-            ? numbers[0]
-            : prompt("اختر الرقم:", numbers.join("\n"));
-
-        if (!number) return;
-
-        // ✅ تنسيق الرقم
-        number = number
-            .replace(/\s+/g, "")
-            .replace(/-/g, "")
-            .replace(/\(/g, "")
-            .replace(/\)/g, "");
-
-        document.getElementById("new_mobile").value = number;
-
-    } catch (err) {
-        console.log("تم الإلغاء أو حدث خطأ", err);
-    }
-});
 
 function closePopup() {
     document.getElementById("numberPopup").style.display = "none";
