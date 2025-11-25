@@ -588,10 +588,6 @@ function printClientsList() {
 }
 
 
-function closePopup() {
-    document.getElementById("numberPopup").style.display = "none";
-}
-
 document.getElementById("pickContact").addEventListener("click", async () => {
     if (!("contacts" in navigator && "select" in navigator.contacts)) {
         alert("المتصفح لا يدعم اختيار جهات الاتصال");
@@ -601,17 +597,29 @@ document.getElementById("pickContact").addEventListener("click", async () => {
     const contacts = await navigator.contacts.select(["tel"], { multiple: false });
     if (!contacts.length || !contacts[0].tel.length) return;
 
-    let numbers = contacts[0].tel.map(n =>
-        n.replace(/\s+/g, "").replace(/-/g, "").replace(/\(/g, "").replace(/\)/g, "")
-    );
+    let numbers = contacts[0].tel.map(n => {
+        n = n.replace(/\s+/g, "")   // إزالة المسافات
+             .replace(/-/g, "")     // إزالة الشرطات
+             .replace(/\(/g, "")    // إزالة (
+             .replace(/\)/g, "");   // إزالة )
 
-    // ✅ إذا رقم واحد فقط
+        // إزالة أي شكل لمفتاح اليمن
+        if (n.startsWith("+967")) n = n.slice(4);
+        else if (n.startsWith("00967")) n = n.slice(5);
+        else if (n.startsWith("967")) n = n.slice(3);
+
+        // إزالة الصفر البادئ إذا موجود
+        n = n.replace(/^0/, "");
+        return n;
+    });
+
+    // ✅ اختيار الرقم الأول بعد التنسيق
     if (numbers.length === 1) {
         document.getElementById("new_mobile").value = numbers[0];
         return;
     }
 
-    // ✅ عرض popup اختيار الأرقام
+    // ✅ إذا أكثر من رقم، عرض popup للاختيار
     const listDiv = document.getElementById("numbersList");
     listDiv.innerHTML = "";
 
@@ -629,6 +637,7 @@ document.getElementById("pickContact").addEventListener("click", async () => {
 
     document.getElementById("numberPopup").style.display = "block";
 });
+
 
 </script>
 
