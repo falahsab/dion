@@ -192,6 +192,7 @@ if(localStorage.getItem("role")!=="admin"){ alert("يجب تسجيل الدخو�
                 <th>العميل</th>
                 <th>الجوال</th>
                 <th>صافي الحساب</th>
+                <th>إجراءات</th>
             </tr>
         </thead>
         <tbody></tbody>
@@ -223,7 +224,7 @@ if(localStorage.getItem("role")!=="admin"){ alert("يجب تسجيل الدخو�
 
 
 <script>
-const API = "https://script.google.com/macros/s/AKfycbyVpJCk3vbby4L9Pl3U2UwRz8S_NeD3kwpLWqGcDHOkxR2xj2A2S3KG94mXHHoRWuKi/exec";
+const API = "https://script.google.com/macros/s/AKfycbxYqTIZ2cmqd-9sRXNp27vli4MBpnCzgXJ4hxbEWMAg69ZRicb8pgjrGPGdkE7bPTLO/exec";
 const waIcon = "https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg";
 
 const qs = id => document.getElementById(id);
@@ -467,18 +468,53 @@ function printTransactions() {
 
 // عرض العملاء وصافي الحساب
 async function showClientsBalances(){
-    const res=await fetch(API,{method:"POST",body:JSON.stringify({action:"getClientsBalance"})});
-    const data=await res.json(); if(!Array.isArray(data)) return alert("خطأ في البيانات");
-    data.sort((a,b)=>b.total-a.total);
-    const tbody=document.querySelector("#clientsBalanceTable tbody"); tbody.innerHTML="";
-    data.forEach(c=>{
-        const tr=document.createElement("tr");
-        tr.innerHTML=`<td>${c.client_id}</td><td>${c.name}</td><td>${c.mobile}</td>
-        <td style="font-weight:bold;color:${c.total>=0?'red':'green'}">${c.total>=0?`عليه ${c.total}`:`له ${Math.abs(c.total)}`}</td>`;
+    const res = await fetch(API, { method: "POST", body: JSON.stringify({ action: "getClientsBalance" }) });
+    const data = await res.json(); 
+    if(!Array.isArray(data)) return alert("خطأ في البيانات");
+
+    data.sort((a,b) => b.total - a.total);
+
+    const tbody = document.querySelector("#clientsBalanceTable tbody"); 
+    tbody.innerHTML = "";
+
+    data.forEach(c => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+            <td>${c.client_id}</td>
+            <td>${c.name}</td>
+            <td>${c.mobile}</td>
+            <td style="font-weight:bold;color:${c.total>=0?'red':'green'}">
+                ${c.total>=0?`عليه ${c.total}`:`له ${Math.abs(c.total)}`}
+            </td>
+            <td>
+                <button style="background:#EF4444;color:white;padding:4px 8px;border:none;border-radius:4px;cursor:pointer;">
+                    حذف
+                </button>
+            </td>
+        `;
         tbody.appendChild(tr);
+
+        // إضافة حدث الحذف مع تأكيد
+        tr.querySelector("button").addEventListener("click", async () => {
+            if(confirm(`هل تريد حذف العميل "${c.name}" وكل عملياته؟`)){
+                const res = await fetch(API, {
+                    method: "POST",
+                    body: JSON.stringify({ action: "deleteClient", client_id: c.client_id })
+                });
+                const data = await res.json();
+                if(data.status === "success"){
+                    alert("تم حذف العميل وكل عملياته بنجاح");
+                    showClientsBalances(); // إعادة تحميل الجدول
+                } else {
+                    alert("حدث خطأ أثناء الحذف");
+                }
+            }
+        });
     });
+
     openModal("clientsModal");
 }
+
 function filterClientsTable(){
     const q=qs("search_client").value.toLowerCase();
     document.querySelectorAll("#clientsBalanceTable tbody tr").forEach(r=>{
@@ -639,6 +675,24 @@ document.getElementById("pickContact").addEventListener("click", async () => {
     document.getElementById("numberPopup").style.display = "block";
 });
 
+//حذف عميلوعملياته
+async function deleteClient(client_id){
+    if(!confirm("هل تريد حذف هذا العميل وجميع عملياته؟")) return;
+
+    // استدعاء API لحذف العميل
+    const res = await fetch(API, {
+        method: "POST",
+        body: JSON.stringify({action: "deleteClient", client_id})
+    });
+    const data = await res.json();
+
+    if(data.status === "success"){
+        alert("تم حذف العميل وكل عملياته بنجاح");
+        loadClients(); // إعادة تحميل العملاء
+    } else {
+        alert("حدث خطأ أثناء الحذف");
+    }
+}
 
 </script>
 
