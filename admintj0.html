@@ -201,6 +201,26 @@ if(localStorage.getItem("role")!=="admin"){ alert("يجب تسجيل الدخو�
   
 </div>
 
+<div id="numberPopup" style="
+    position: fixed;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    background: white;
+    padding: 15px;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.2);
+    display: none;
+    z-index: 9999;
+    width: 250px;
+    text-align: center;
+">
+    <h3 style="margin:0 0 10px;">اختر الرقم</h3>
+    <div id="numbersList"></div>
+    <button onclick="closePopup()" style="margin-top:10px;padding:6px 10px;">إلغاء</button>
+</div>
+
+
 <script>
 const API = "https://script.google.com/macros/s/AKfycbyVpJCk3vbby4L9Pl3U2UwRz8S_NeD3kwpLWqGcDHOkxR2xj2A2S3KG94mXHHoRWuKi/exec";
 const waIcon = "https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg";
@@ -598,6 +618,48 @@ document.getElementById("pickContact").addEventListener("click", async () => {
     } catch (err) {
         console.log("تم الإلغاء أو حدث خطأ", err);
     }
+});
+
+function closePopup() {
+    document.getElementById("numberPopup").style.display = "none";
+}
+
+document.getElementById("pickContact").addEventListener("click", async () => {
+    if (!("contacts" in navigator && "select" in navigator.contacts)) {
+        alert("المتصفح لا يدعم اختيار جهات الاتصال");
+        return;
+    }
+
+    const contacts = await navigator.contacts.select(["tel"], { multiple: false });
+    if (!contacts.length || !contacts[0].tel.length) return;
+
+    let numbers = contacts[0].tel.map(n =>
+        n.replace(/\s+/g, "").replace(/-/g, "").replace(/\(/g, "").replace(/\)/g, "")
+    );
+
+    // ✅ إذا رقم واحد فقط
+    if (numbers.length === 1) {
+        document.getElementById("new_mobile").value = numbers[0];
+        return;
+    }
+
+    // ✅ عرض popup اختيار الأرقام
+    const listDiv = document.getElementById("numbersList");
+    listDiv.innerHTML = "";
+
+    numbers.forEach(num => {
+        let btn = document.createElement("button");
+        btn.textContent = num;
+        btn.style.cssText =
+            "display:block;width:100%;margin:5px 0;padding:8px;border:none;background:#28a745;color:white;border-radius:6px;";
+        btn.onclick = () => {
+            document.getElementById("new_mobile").value = num;
+            closePopup();
+        };
+        listDiv.appendChild(btn);
+    });
+
+    document.getElementById("numberPopup").style.display = "block";
 });
 
 </script>
