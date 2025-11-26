@@ -414,7 +414,7 @@ smsBtn.onclick = e => {
     const total = clientTransactions.reduce((s,x)=>s+Number(x.amount),0);
     const totalText = total >=0 ? "عليك " + total : "لك " + Math.abs(total);
     const typeText = t.type === "debit" ? "عليك" : "لك";
-    const msg = `العميل: ${clientName}\n${typeText} ${Math.abs(t.amount)} ريال\nصافي حسابك: ${totalText}`;
+    const msg = `الاخ: ${clientName}\nقيد ${typeText} ${Math.abs(t.amount)} ريال\nصافي حسابك: ${totalText} ريال/n#يمن_ستلايت`;
     const url = `sms:${clientMobile}?body=${encodeURIComponent(msg)}`;
     window.open(url, "_blank");
 };
