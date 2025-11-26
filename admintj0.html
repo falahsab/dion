@@ -78,6 +78,43 @@ width:50px;
     cursor: pointer;
     font-size: 18px;
 }
+.wa-sms-group {
+    display: flex;
+    gap: 6px;       /* المسافة بين الأزرار */
+    justify-content: center;
+}
+
+.wa-sms-group button {
+    flex: 1;         /* يساوي عرض الأزرار داخل المجموعة */
+    padding: 6px 8px;
+    border: none;
+    border-radius: 6px;
+    color: white;
+    cursor: pointer;
+    font-size: 0.85rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    transition: 0.2s;
+}
+
+.wa-sms-group .wa-btn {
+    background: #25D366;
+}
+
+.wa-sms-group .wa-btn:hover {
+    background: #1ebe57;
+}
+
+.wa-sms-group .sms-btn {
+    background: #3b82f6;
+}
+
+.wa-sms-group .sms-btn:hover {
+    background: #2563eb;
+}
+
 
 </style>
 </head>
@@ -200,6 +237,7 @@ if(localStorage.getItem("role")!=="admin"){ alert("يجب تسجيل الدخو�
         <tbody></tbody>
       </table>
       <button onclick="printClientsList()" style="background:#0b74de; color:white; margin-top:10px;">طباعة قائمة العملاء</button>
+<div id="clientsTotals" style="padding:10px;font-size:18px;font-weight:bold;color:#00693B"></div>
 
   </div>
   
@@ -330,54 +368,62 @@ function renderTransactions(transactions){
     const clientMobile = client.mobile || "";
 
     transactions.forEach(t => {
-        const row = table.insertRow();
-        row.onclick = () => openTransModal(t.trans_id);
+    const row = table.insertRow();
+    row.onclick = () => openTransModal(t.trans_id);
 
-        // خلايا الجدول بدون ID واسم العميل
-        const cells = [
-            Math.abs(t.amount),
-            t.type === "debit" ? "عليه" : "له",
-            t.note,
-            new Date(t.date).toLocaleDateString()
-        ];
+    // خلايا الجدول بدون ID واسم العميل
+    const cells = [
+        Math.abs(t.amount),
+        t.type === "debit" ? "عليه" : "له",
+        t.note,
+        new Date(t.date).toLocaleDateString()
+    ];
 
-        cells.forEach((c, i) => {
-            const td = row.insertCell();
-            td.textContent = c;
-            if (i === 0) td.className = t.type === "debit" ? "debit" : "credit"; // تلوين المبلغ
-        });
+    cells.forEach((c, i) => {
+        const td = row.insertCell();
+        td.textContent = c;
+        if (i === 0) td.className = t.type === "debit" ? "debit" : "credit"; // تلوين المبلغ
+    });
 
-        // زر واتساب
-const waCell = row.insertCell();
-const btn = document.createElement("button");
-btn.className = "wa-btn";
-btn.innerHTML = `<img src="${waIcon}"> واتساب`;
+    // زرواتساب وSMS
+const waSmsCell = row.insertCell();
+const groupDiv = document.createElement("div");
+groupDiv.className = "wa-sms-group";
 
-btn.onclick = e => {
+// زر واتساب
+const waBtn = document.createElement("button");
+waBtn.className = "wa-btn";
+waBtn.innerHTML = `<img src="${waIcon}"> واتساب`;
+waBtn.onclick = e => {
     e.stopPropagation();
-
     const total = clientTransactions.reduce((s, x) => s + Number(x.amount), 0);
     const typeText = t.type === "debit" ? "عليك" : "لك";
     const totalText = total >= 0 ? "عليك " + total : "لك " + Math.abs(total);
-
-    const msg = `\u{1F464} *الاخ:* ${clientName}
-\u{1F4B0} *قيد ${typeText} مبلغ:* ${Math.abs(t.amount)} ريال
-\u{1F4DD} *البيان:* ${t.note}
----------------
-\u{1F4CA} صافي حسابك:
-    ${totalText} ريال
-\u{1F4CA} *صافي حسابك:*
-      ${totalText} ريال
-
-\u{2B50} #يمن-ستلايت`;
-
+    const msg = `الاخ: ${clientName}\n${typeText} ${Math.abs(t.amount)} ريال\nصافي حسابك: ${totalText}`;
     const url = `https://wa.me/${clientMobile}?text=${encodeURIComponent(msg)}`;
     window.open(url, "_blank");
 };
+groupDiv.appendChild(waBtn);
 
-waCell.appendChild(btn);
+// زر SMS
+const smsBtn = document.createElement("button");
+smsBtn.className = "sms-btn";
+smsBtn.textContent = "SMS";
+smsBtn.onclick = e => {
+    e.stopPropagation();
+    const total = clientTransactions.reduce((s,x)=>s+Number(x.amount),0);
+    const totalText = total >=0 ? "عليك " + total : "لك " + Math.abs(total);
+    const typeText = t.type === "debit" ? "عليك" : "لك";
+    const msg = `العميل: ${clientName}\n${typeText} ${Math.abs(t.amount)} ريال\nصافي حسابك: ${totalText}`;
+    const url = `sms:${clientMobile}?body=${encodeURIComponent(msg)}`;
+    window.open(url, "_blank");
+};
+groupDiv.appendChild(smsBtn);
 
-    });
+waSmsCell.appendChild(groupDiv);
+
+});
+
 }
 
 
@@ -494,6 +540,29 @@ async function showClientsBalances(){
 
     data.sort((a,b) => b.total - a.total);
 
+    // حساب الإجماليات
+    let totalDebit = 0;   // عليه
+    let totalCredit = 0;  // له
+
+    data.forEach(c=>{
+        if(c.total >= 0) totalDebit += c.total;
+        else totalCredit += Math.abs(c.total);
+    });
+
+    const diff = totalDebit - totalCredit;
+
+    // عرض الإجماليات
+    const totalsDiv = document.getElementById("clientsTotals");
+    if(totalsDiv){
+        totalsDiv.innerHTML = `
+            <div><strong>إجمالي لك:</strong> ${totalDebit} ريال</div>
+            <div><strong>إجمالي عليك:</strong> ${totalCredit} ريال</div>
+            <div><strong>الفرق:</strong> 
+                ${diff >= 0 ? `لك ${diff}` : `عليك ${Math.abs(diff)}`}
+            </div>
+        `;
+    }
+
     const tbody = document.querySelector("#clientsBalanceTable tbody"); 
     tbody.innerHTML = "";
 
@@ -514,7 +583,6 @@ async function showClientsBalances(){
         `;
         tbody.appendChild(tr);
 
-        // إضافة حدث الحذف مع تأكيد
         tr.querySelector("button").addEventListener("click", async () => {
             if(confirm(`هل تريد حذف العميل "${c.name}" وكل عملياته؟`)){
                 const res = await fetch(API, {
@@ -524,7 +592,7 @@ async function showClientsBalances(){
                 const data = await res.json();
                 if(data.status === "success"){
                     alert("تم حذف العميل وكل عملياته بنجاح");
-                    showClientsBalances(); // إعادة تحميل الجدول
+                    showClientsBalances();
                 } else {
                     alert("حدث خطأ أثناء الحذف");
                 }
@@ -534,6 +602,7 @@ async function showClientsBalances(){
 
     openModal("clientsModal");
 }
+
 
 function filterClientsTable(){
     const q=qs("search_client").value.toLowerCase();
