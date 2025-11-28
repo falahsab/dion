@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>مراجعة رأس المال بالدولار</title>
+<style>
+  body {
+    font-family: Tahoma, sans-serif;
+    background: #f0f2f5;
+    padding: 10px;
+    margin: 0;
+  }
+  h1 {
+    text-align: center;
+    color: #333;
+    font-size: 1.8em;
+    margin-bottom: 15px;
+  }
+  .top-box {
+    background: #fff;
+    padding: 15px;
+    border-radius: 8px;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 15px;
+  }
+  table {
+    border-collapse: collapse;
+    width: 100%;
+    background: #fff;
+    border-radius: 8px;
+    overflow-x: auto;
+    display: block;
+  }
+  th, td {
+    border: 1px solid #ddd;
+    padding: 10px;
+    text-align: center;
+    min-width: 80px;
+  }
+  th {
+    background: #4CAF50;
+    color: white;
+  }
+  input, select {
+    padding: 5px;
+    border-radius: 4px;
+    border: 1px solid #ccc;
+    text-align: center;
+  }
+  input.nameInput {
+    width: 120px;
+    text-align: left;
+  }
+  button {
+    margin-top: 10px;
+    padding: 8px 12px;
+    border: none;
+    background-color: #4CAF50;
+    color: white;
+    cursor: pointer;
+    border-radius: 5px;
+  }
+  button:hover {
+    background-color: #45a049;
+  }
+  .summary {
+    margin-top: 15px;
+    font-size: 1.1em;
+    background: #fff;
+    padding: 10px;
+    border-radius: 8px;
+  }
+  .negative {
+    color: red;
+    font-weight: bold;
+  }
+
+  /* متجاوب */
+  @media (max-width: 600px) {
+    .top-box {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+    input, select {
+      width: 100%;
+      margin-bottom: 5px;
+    }
+    input.nameInput {
+      width: 100%;
+    }
+    button {
+      width: 100%;
+    }
+    table, th, td {
+      font-size: 0.9em;
+    }
+  }
+</style>
+</head>
+<body>
+
+<h1>مراجعة رأس المال بالدولار</h1>
+
+<div class="top-box">
+  <label>سعر صرف الريال إلى الدولار:</label>
+  <input type="number" id="exchangeRate" value="220" step="0.01">
+</div>
+
+<div style="overflow-x:auto;">
+<table>
+  <thead>
+    <tr>
+      <th>الحساب / المحفظة</th>
+      <th>الرصيد</th>
+      <th>العملة</th>
+      <th>الرصيد بالدولار</th>
+      <th>حذف</th>
+    </tr>
+  </thead>
+  <tbody id="accountsTable"></tbody>
+</table>
+</div>
+
+<button id="addRowBtn">إضافة حساب جديد</button>
+<button id="resetBalancesBtn" style="background-color:#f44336;margin-left:10px;">تصفير كل الأرصدة</button>
+
+<div class="summary" id="totalsSummary"></div>
+
+<script>
+const accountsTable = document.getElementById("accountsTable");
+const totalsSummary = document.getElementById("totalsSummary");
+const exchangeRateInput = document.getElementById("exchangeRate");
+const resetBalancesBtn = document.getElementById("resetBalancesBtn");
+
+// تحميل البيانات من localStorage
+function loadData() {
+  const savedData = JSON.parse(localStorage.getItem("accountsData") || "[]");
+  const savedRate = Number(localStorage.getItem("exchangeRate") || 220);
+  exchangeRateInput.value = savedRate;
+  savedData.forEach(acc => addRow(acc.name, acc.current, acc.currency));
+}
+
+// حفظ البيانات في localStorage
+function saveData() {
+  const data = Array.from(accountsTable.querySelectorAll("tr")).map(tr => {
+    return {
+      name: tr.querySelector(".nameInput").value || "",
+      current: Number(tr.querySelector(".current").value) || 0,
+      currency: tr.querySelector(".currency").value
+    };
+  });
+  localStorage.setItem("accountsData", JSON.stringify(data));
+  localStorage.setItem("exchangeRate", exchangeRateInput.value);
+}
+
+function updateTable() {
+  const rate = Number(exchangeRateInput.value) || 1;
+  let totalUSD = 0;
+
+  Array.from(accountsTable.querySelectorAll("tr")).forEach(tr => {
+    const currentInput = tr.querySelector(".current");
+    const currencySelect = tr.querySelector(".currency");
+    const usdEl = tr.querySelector(".usd");
+
+    const current = Number(currentInput.value) || 0;
+    const currency = currencySelect.value;
+
+    let usdValue = currency === "دولار" ? current : current / rate;
+    usdEl.textContent = usdValue.toLocaleString(undefined, {maximumFractionDigits:2});
+    totalUSD += usdValue;
+  });
+
+  totalsSummary.innerHTML = `<strong>إجمالي الموجود بالدولار:</strong> ${totalUSD.toLocaleString(undefined,{maximumFractionDigits:2})}`;
+
+  saveData();
+}
+
+// دالة لإضافة صف جديد
+function addRow(name = "", current = 0, currency = "ريال") {
+  const tr = document.createElement("tr");
+  tr.innerHTML = `
+    <td><input type="text" class="nameInput" value="${name}" placeholder="اسم الحساب"></td>
+    <td><input type="number" class="current" value="${current}" oninput="updateTable()"></td>
+    <td>
+      <select class="currency" onchange="updateTable()">
+        <option value="ريال" ${currency==="ريال"?"selected":""}>ريال</option>
+        <option value="دولار" ${currency==="دولار"?"selected":""}>دولار</option>
+      </select>
+    </td>
+    <td class="usd">0</td>
+    <td><button class="deleteBtn">حذف</button></td>
+  `;
+  accountsTable.appendChild(tr);
+
+  // زر الحذف
+  tr.querySelector(".deleteBtn").addEventListener("click", () => {
+    tr.remove();
+    updateTable();
+  });
+
+  tr.querySelector(".current").addEventListener("input", updateTable);
+  tr.querySelector(".currency").addEventListener("change", updateTable);
+  tr.querySelector(".nameInput").addEventListener("input", updateTable);
+
+  updateTable();
+}
+
+// زر إضافة حساب جديد
+document.getElementById("addRowBtn").addEventListener("click", () => addRow());
+
+// زر تصفير كل الأرصدة
+resetBalancesBtn.addEventListener("click", () => {
+  Array.from(accountsTable.querySelectorAll("tr")).forEach(tr => {
+    tr.querySelector(".current").value = 0;
+  });
+  updateTable();
+});
+
+// تحديث عند تغيير سعر الصرف
+exchangeRateInput.addEventListener("input", updateTable);
+
+// تحميل البيانات المحفوظة عند فتح الصفحة
+loadData();
+
+// إذا لم توجد بيانات سابقة، نضيف بعض الصفوف التجريبية
+if(accountsTable.querySelectorAll("tr").length === 0){
+  addRow("البنك الأهلي", 1, "ريال");
+  addRow("محفظة أمريكية", 1, "دولار");
+}
+</script>
+
+</body>
+</html>
