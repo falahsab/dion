@@ -74,10 +74,6 @@
     padding: 10px;
     border-radius: 8px;
   }
-  .negative {
-    color: red;
-    font-weight: bold;
-  }
 
   /* متجاوب */
   @media (max-width: 600px) {
@@ -184,9 +180,9 @@ function addRow(name = "", current = 0, currency = "ريال") {
   const tr = document.createElement("tr");
   tr.innerHTML = `
     <td><input type="text" class="nameInput" value="${name}" placeholder="اسم الحساب"></td>
-    <td><input type="number" class="current" value="${current}" oninput="updateTable()"></td>
+    <td><input type="number" class="current" value="${current}"></td>
     <td>
-      <select class="currency" onchange="updateTable()">
+      <select class="currency">
         <option value="ريال" ${currency==="ريال"?"selected":""}>ريال</option>
         <option value="دولار" ${currency==="دولار"?"selected":""}>دولار</option>
       </select>
@@ -196,15 +192,24 @@ function addRow(name = "", current = 0, currency = "ريال") {
   `;
   accountsTable.appendChild(tr);
 
-  // زر الحذف
+  // زر الحذف مع رسالة تأكيد
   tr.querySelector(".deleteBtn").addEventListener("click", () => {
-    tr.remove();
-    updateTable();
+    const accountName = tr.querySelector(".nameInput").value || "هذا الحساب";
+    if(confirm(`هل أنت متأكد من حذف الحساب "${accountName}"؟`)){
+      tr.remove();
+      updateTable();
+    }
   });
 
+  // تحديث الجدول عند أي تغيير
   tr.querySelector(".current").addEventListener("input", updateTable);
   tr.querySelector(".currency").addEventListener("change", updateTable);
   tr.querySelector(".nameInput").addEventListener("input", updateTable);
+
+  // تحديد كامل النص عند النقر على خانة الرصيد
+  tr.querySelector(".current").addEventListener("focus", (e) => {
+    e.target.select();
+  });
 
   updateTable();
 }
@@ -232,7 +237,7 @@ if(accountsTable.querySelectorAll("tr").length === 0){
   addRow("صنعاء سات", 1, "دولار");
   addRow("اونكس", 1, "دولار");
   addRow("الكريمي جوال", 1, "ريال");
-  addRow("الكريكي عملاء", 1, "ريال");
+  addRow("الكريمي وكلاء", 1, "ريال");
   addRow("جيب", 1, "ريال");
   addRow("ون كاش", 1, "ريال");
   addRow("كاش", 1, "ريال");
@@ -246,7 +251,6 @@ if(accountsTable.querySelectorAll("tr").length === 0){
   addRow("عميل 1", 1, "ريال");
   addRow("عميل 2", 1, "ريال");
   addRow("عميل 3", 1, "ريال");
-
 }
 </script>
 
